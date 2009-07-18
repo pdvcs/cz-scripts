@@ -2,7 +2,7 @@
 
 # See LICENSE.txt in this source repository for terms of use.
 # Generates an RSS feed (with images) for the Archie Daily Comics at
-# http://www.archiecomics.com/pops_shop/dailycomics/
+# http://www.archiecomics.com/pops_shop/dailycomics/dailycomic.html
 
 # TODO: update, the display logic appears to have changed.
 
