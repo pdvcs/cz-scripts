@@ -1,0 +1,76 @@
+<html manifest="countdown.manifest">
+<head>
+<title>Countdown</title>
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+<link rel="apple-touch-icon" href="countdown-iphone-icon.png">
+<style type="text/css">
+<!--
+#ct { font-family: Helvetica, Arial, sans-serif; font-size: 24px; }
+#ct .day { font-size: 32px; }
+-->
+</style>
+<script type="text/javascript">
+<!--
+/* based on http://www.javascriptkit.com/script/script2/count2.shtml */
+
+var secondsInHour = 60 * 60;
+var secondsInDay = secondsInHour * 24;
+var countdownCompleteMessage = "Countdown<br>Complete!";
+var intervalId = "";
+
+function startCountdown () {
+    countdown(2010, 06, 18, 19, 00);
+    intervalId = setInterval("countdown(2010, 06, 18, 19, 00)", 1000);
+}
+
+function sing_plural (num, singular_form) {
+    if (num == 1) {
+        return singular_form;
+    } else {
+        return singular_form + "s";
+    }
+}
+
+function pad (number, length) {
+    var str = '' + number;
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return str;
+}
+
+function countdown (y, mo, d, h, mi) { 
+    
+    var j, k;
+    var now = new Date();
+    // the Date constructor uses a 0-index month
+    var future = new Date(y, mo-1, d, h, mi, 0, 0)
+    var diff = Math.floor((future - now) / 1000); // difference in times, in seconds
+    if (diff < 0) {
+        document.getElementById("ct").innerHTML = countdownCompleteMessage;
+        if (intervalId !== "") clearInterval(intervalId); 
+    } else {
+        j = diff % secondsInDay; k = j % secondsInHour;
+        dayDelta = Math.floor(diff / secondsInDay);
+        hourDelta = Math.floor(j / secondsInHour);
+        minuteDelta = Math.floor(k / 60);
+        secondDelta = Math.floor(k % 60);
+       
+        document.getElementById("ct").innerHTML = "<br><br><span class='day'>"
+            + dayDelta + " "
+            + sing_plural(dayDelta, "day") + "</span><br> "
+            + hourDelta + " "
+            + sing_plural(hourDelta, "hour") + " "
+            + pad(minuteDelta, 2) + "m "
+            + pad(secondDelta, 2) + "s";
+    }
+}
+
+// -->
+</script>
+</head>
+<body onLoad="startCountdown();">
+<!-- A simple Javascript/iPhone HTML/offline Demo -->
+<p align="center" id="ct">&nbsp;</p>
+</body>
+</html>

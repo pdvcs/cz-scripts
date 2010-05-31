@@ -1,0 +1,346 @@
+<!DOCTYPE HTML PUBLIC
+ "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>Create and Print Gregorian Calendars using Javascript</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=8">
+        <meta http-equiv="Cache-control" content="max-age=43200">
+        <meta name="keywords" content="gregorian, javascript, calendar, print, create">
+        <meta name="description" content="Make and Print Gregorian Calendars, from the year 1583 to 25000.">
+        <link rel="stylesheet" href="cal-print.css" type="text/css" media="print">
+        <link rel="stylesheet" href="cal-screen.css" type="text/css" media="screen">
+
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        <!--
+            
+            function button_enable (btnid) {
+                $(btnid).removeAttr("disabled");
+                $(btnid).css("color", "#000");
+            }
+            function button_disable (btnid) {
+                $(btnid).attr("disabled", "true");
+                $(btnid).css("color", "#aaa");
+            }
+
+            $(document).ready(function () {
+                
+                initButtons();
+                
+                var inputbox = $("#yearsel");
+                inputbox.val(new Date().getFullYear());
+                inputbox.focus();
+                
+                inputbox.keyup(function (e) {
+                    if (!yearpattern.test(inputbox.val())
+                        || parseInt(inputbox.val()) < 1583
+                        || parseInt(inputbox.val()) > 25000) {
+                        inputbox.attr("style", "background: #ffdae7;")
+                        button_disable("#show");
+                    } else {
+                        inputbox.attr("style", "background: white;")
+                        button_enable("#show");
+                        if (e.keyCode == 13) {
+                            $("#show").click();
+                        }
+                    }
+                });
+            });
+            
+            function initButtons () {
+                button_disable("#print");
+                $("#show").click(function (evt) {
+                    var selectedYear = parseInt($("#yearsel").val());
+                    evt.preventDefault();
+                    renderCalendar(1, 12, selectedYear);
+                    document.title = selectedYear + " Calendar";
+                    button_enable("#print");
+                });
+                $("#print").click(function (evt) {
+                    window.print();
+                });
+                $("#aboutlink").click(function (evt) {
+                    evt.preventDefault();
+                    if (abtlinkhidden === true) {
+                        $("#helptext").show();
+                        $("#aboutlink").html("| <a href=\"#\">Hide Page Info</a>");
+                        abtlinkhidden = false;
+                    } else {
+                        $("#helptext").hide();
+                        $("#aboutlink").html("| <a href=\"#\">Show Page Info</a>");
+                        abtlinkhidden = true;
+                    }
+                });
+            }
+            
+            var timeDiff = {
+                setStartTime : function () {
+                    d = new Date();
+                    time  = d.getTime();
+                },
+
+                getDiff : function () {
+                    d = new Date();
+                    return (d.getTime()-time);
+                }
+            }
+            
+            var mtbl  = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+            var mnames = new Array("January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December");
+            
+            // End-of-month Julian Day lookup tables for normal and leap years
+            var jdtbln = new Array(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+            var jdtbll = new Array(0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335);
+            
+            var leap = false;
+            var jdtbl = jdtbln;
+            var yearpattern = /^\d{4,5}$/;
+            var displayStyle = "std";
+            var abtlinkhidden = true;
+
+            function isLeap (year) {
+                return (year % 100 != 0) && (year % 4 == 0) || (year % 400 == 0);
+            }
+            function julianDay (day, month) {
+                return day + jdtbl[month-1];
+            }
+
+            // returns the day of week as an integer: 1=Sun, 2=Mon, ..., 7=Sat
+            function dayOfWeek (day, month, year) {
+                leap = isLeap(year);
+                jdtbl = leap? jdtbll : jdtbln;
+                var dow = (year + julianDay(day, month)
+                    + Math.floor((year-1)/4) - Math.floor((year-1)/100)
+                    + Math.floor((year-1)/400)) % 7;
+                return dow == 0? 7: dow;
+            }
+
+            function renderMonth (parent, month, year) {
+                var dateCells = $(parent + " td.dt");
+                var cellid = dayOfWeek(1, month, year) - 1;
+                var max = mtbl[month-1];
+                if (max == 28 && leap) max = 29;
+
+                dateCells.eq(cellid++).html(1);
+                for (var ix = 2; ix <= max; ix++) {
+                    dateCells.eq(cellid++).html(ix);
+                }
+                $(parent + " td.mo").html(mnames[month-1]);
+            }
+            
+            function getMonthSequence (mainMonth) {
+                var tmp = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+                if (mainMonth == 0) return tmp;
+                
+                var monthseq = new Array();
+                monthseq.push(mainMonth);
+                if (mainMonth == 11) {
+                    // n+1 isn't possible
+                    monthseq.push(9);
+                    monthseq.push(10);
+                    tmp.splice(9, 3);
+                } else {
+                    monthseq.push(mainMonth-1);
+                    monthseq.push(mainMonth+1);
+                    tmp.splice(mainMonth-1, 3);
+                }
+                return monthseq.concat(tmp);
+            }
+
+            function getIdPrefix (ix) {
+                if (ix < 3 && displayStyle == "alt1") {
+                    return "#p2-";
+                } else {
+                    return "#p";
+                }
+            }
+
+            function showSelective () {
+                $("#helptext").hide();
+                $("#aboutlink").show();
+                $("div#cal").show();
+                $("p.prinvis").show();
+                if (displayStyle == "alt1") {
+                    $("#mtoprow").hide();
+                    $("#mtoprow2").show();
+                } else {
+                    $("#mtoprow").show();
+                    $("#mtoprow2").hide();
+                }
+            }
+            
+            function renderCalendar (startMonth, stopMonth, year) {
+                timeDiff.setStartTime();
+                displayStyle = $("#dispstyle").val();
+                var d = new Date();
+                var seqargs = 0;
+                if (displayStyle == "alt1")
+                    seqargs = (d.getFullYear() == year? d.getMonth(): 0);
+                var monthHtml = $("span#m0").html();
+                var monthseq = getMonthSequence(seqargs);
+
+                $("#caltitle").text(year);
+                for (var ix = startMonth-1; ix < stopMonth; ix++) {
+                    var newId = getIdPrefix(ix) + ix;
+                    if ($(newId).length == 1) {
+                        $(newId).html(monthHtml);
+                        renderMonth(newId, monthseq[ix]+1, year);
+                    }
+                }
+
+                showSelective();
+
+                // benchmarking
+                var elapsed = timeDiff.getDiff();
+                $("#bm").text(" | Page rendered in " + elapsed + " ms.").show();
+            }
+        
+        // -->
+        </script>
+    </head>
+    <body>
+        <h1>Create and Print Calendars using Javascript</h1>
+        <noscript>
+            <p class="jswarn">This page makes printable calendars for any year between 1583 and 25000.
+            You need to enable Javascript for it to work.</p>
+        </noscript>
+        <p class="inputform">
+            Enter a year between 1583 and 25000:
+            <input type="text" id="yearsel" name="yearsel" value="" maxlength="5" />
+            <!-- Custom CSS buttons from http://stopdesign.com/eg/buttons/3.0/code.html -->
+            <button type="button" id="show" name="show" class="btn"><span><span>Show Calendar</span></span></button>
+            &nbsp;&nbsp;
+            Display style: <select id="dispstyle" name="dispstyle">
+                <option value="std" selected="selected">Standard</option>
+                <!-- <option value="alt1">Alternate</option> -->
+            </select>
+            &nbsp;&nbsp;
+            <button type="button" id="print" name="print" class="btn"><span><span>Print</span></span></button>
+        </p>
+        <div id="cal" style="display: none;">
+        <div id="caltitle"></div>
+        <table cols="2" id="mtoprow2" style="display: none;">
+            <tr>
+                <td id="monthmain" valign="top"><span id="p2-0"></span></td>
+                <td id="monthssec" valign="top">
+                    <span id="p2-1"></span>
+                    <span id="p2-2"></span>
+                </td>
+            </tr>
+        </table>
+        <table cols="3" id="months">
+            <tr id="mtoprow" style="display: none;">
+                <td class="mc" valign="top"><span id="p0"></span></td>
+                <td class="mc" valign="top"><span id="p1"></span></td>
+                <td class="mc" valign="top"><span id="p2"></span></td>
+            </tr>
+            <tr>
+                <td class="mc" valign="top"><span id="p3"></span></td>
+                <td class="mc" valign="top"><span id="p4"></span></td>
+                <td class="mc" valign="top"><span id="p5"></span></td>
+            </tr>
+            <tr>
+                <td class="mc" valign="top"><span id="p6"></span></td>
+                <td class="mc" valign="top"><span id="p7"></span></td>
+                <td class="mc" valign="top"><span id="p8"></span></td>
+            </tr>
+            <tr>
+                <td class="mc" valign="top"><span id="p9"></span></td>
+                <td class="mc" valign="top"><span id="p10"></span></td>
+                <td class="mc" valign="top"><span id="p11"></span></td>
+            </tr>
+        </table>
+        </div>
+        <p class="prinvis" style="display: none;">&nbsp;</p>
+        <div id="helptext">
+            <h3>About this Page</h3>
+            <p>This page makes printable calendars for any year between 1583 and 25000. The calendar system it uses
+            is called the <em>Gregorian Calendar</em>, which is the &#8216;standard&#8217; internationally accepted calendar.</p>
+            <span class="prhide"><a href="http://www.flickr.com/photos/adactio/1391540120/"><img src="calendar-reform-m.jpg" width="240" height="180" style="float: right; padding: 2px 10px 6px 10px; border: 0px;"
+                alt="Calendar Reform plaque at Almesbury House, Wiltshire. Photo by Flickr user adactio"
+                title="Calendar Reform plaque at Almesbury House, Wiltshire. Photo by Flickr user adactio"></a></span>
+            <p>The <a href="http://en.wikipedia.org/wiki/Gregorian_calendar">Gregorian Calendar</a> was introduced by Pope Gregory XIII in 1582, as a correction to the widely followed Julian calendar, when it became apparent that Easter was in grave danger of turning into a Summer festival. With help from the Jesuit astronomer <a href="http://en.wikipedia.org/wiki/Cristoph_Clavius">Christoph Clavius</a> (after whom a large <a href="http://en.wikipedia.org/wiki/Clavius_(crater)">moon crater</a> is named), he extended the Julian leap-year concept by saying that years divisible by 100 but not by 400 were not leap years (e.g., 1700, 1800 and 1900 weren't leap years but 2000 is).</p>
+            <p>This created a calendar without any accuracy problems upto about 33000 <a href="http://en.wikipedia.org/wiki/Common_era">CE</a>. However, the Gregorian calendar was initially adopted only in Catholic European countries. So don't expect very early dates generated by this program to match those in national calendars of many countries &mdash; notably Russia (upto 1919) and Britain (upto September 1752). Here is a readable brief <a href="http://web.archive.org/web/20021211213913/http://es.rice.edu/ES/humsoc/Galileo/Things/gregorian_calendar.html">history of the development of the Gregorian calendar</a>.</p>
+            <p>This page uses Javascript extensively and needs a modern browser to work (the latest version of <a href="http://www.mozilla.com/firefox">Firefox</a> or <a href="http://www.google.com/chrome">Chrome</a> will work well). If you have an older browser, you can try an <a href="old-javascript-calendar.html">older version of this page</a>.</p>
+            <h3>Other Resources</h3>
+            <ol>
+                <li><a href="http://en.wikipedia.org/wiki/List_of_calendars">Calendar Systems across the world</a> on Wikipedia.</li>
+                <li><a href="http://web.meson.org/calendars/">International Calendar Conversions</a> &mdash; converts across many calendar systems, requires Java.</li>
+            </ol>
+            <p class="prhide">&nbsp;</p>
+        </div>
+        <hr>
+        <p class="footer">
+            <!-- Site Meter -->
+            <span class="about">
+            <script type="text/javascript" src="http://s12.sitemeter.com/js/counter.js?site=s12chaoszone" defer="defer">
+            </script>
+            <noscript>
+            <a href="http://s12.sitemeter.com/stats.asp?site=s12chaoszone" target="_top">
+            <img src="http://s12.sitemeter.com/meter.asp?site=s12chaoszone" alt="Site Meter" border="0"/></a>
+            </noscript>
+            </span>
+            <!-- Copyright (c)2009 Site Meter -->
+
+            &copy; 2009-2010 Prasenjeet Dutta. <a rel="license" href="http://creativecommons.org/licenses/by/2.0/uk/">Terms of Use</a>
+            <span class="about"> |
+            <a href="/">Home</a>
+            <!-- Do NOT introduce any line breaks OR change any characters in the following line -->
+            <span id="aboutlink" style="display: none;">| <a href="#">Show Page Info</a></span>
+            </span>
+            <span id="bm" style="display: none;"></span>
+        </p>
+
+        <div id="tmp" style="display: none;">
+        <span id="m0">
+        <table cols="7" border="0">
+            <tbody>
+                <tr>
+                    <td class="mo" colspan="7">Month</td>
+                </tr>
+                <tr>
+                    <td class="day">Sun</td>
+                    <td class="day">Mon</td>
+                    <td class="day">Tue</td>
+                    <td class="day">Wed</td>
+                    <td class="day">Thu</td>
+                    <td class="day">Fri</td>
+                    <td class="day">Sat</td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+                <tr>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td><td class="dt"></td><td class="dt"></td>
+                    <td class="dt"></td>
+                </tr>
+            </tbody>
+        </table>
+        </span>
+        </div>
+    </body>
+</html>

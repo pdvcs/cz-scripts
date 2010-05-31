@@ -1,0 +1,87 @@
+* {
+	vertical-align: baseline; font-weight: inherit; font-family: inherit;
+	font-style: inherit; font-size: 100%; border: 0 none; outline: 0;
+	font-family: Helvetica, Arial, sans-serif;
+	padding: 0; margin: 0; /* reset: http://j.mp/I9yRx */
+}
+body { background-color: #fff; }
+#dispstyle, #yearsel { border: 1px #555 solid; font-size: 13px; width: 90px; padding: 2px; }
+#yearsel { margin-right: 5px; }
+td.mo { font-weight: bold; font-size: 14px; text-align: center; }
+td.dt { font-weight: normal; font-size: 12px; text-align: right; width: 25px; }
+td.day {
+	font-weight: normal; font-size: 12px; text-align: right;
+	width: 25px; border-bottom: 1px silver solid;
+}
+.jswarn {
+	font-size: 16px; font-weight: bold; padding: 10px;
+	margin: 30px; text-align: center;
+	border: 2px red solid; background-color: #ffdae7;
+}
+.inputform {
+	font-size: 16px; padding: 10px; height: 35px;
+	background: #fff url('gray_gradient.png') repeat-x bottom left;
+}
+p, ol { font-size: 14px; padding: 2px 10px 6px 10px; line-height: 20px; }
+h3 { font-size: 16px; padding: 14px 10px 6px 10px; font-weight: bold; }
+ol {
+	list-style-type: decimal; list-style-position: outside;
+	padding-left: 20px; margin-left: 10px;
+}
+li { line-height: 20px; padding-bottom: 6px; }
+.prinvis { padding: 6px 10px 6px 10px; }
+#caltitle {
+	font-size: 18px; width: 586px;
+	font-weight: bold; padding: 10px; text-align: center;
+}
+.footer { font-size: 11px; padding: 10px; }
+.mc { padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; }
+hr { color: #777; height: 2px; background-color: #777; }
+em { font-style: italic; }
+h1 { display: none; }
+
+@media only screen and (max-device-width: 480px) {
+  #print { display: none; }
+}
+
+/* CSS Buttons - http://stopdesign.com/eg/buttons/3.0/code.html */
+.btn {
+	display: inline-block;
+	background: none;
+	margin: 0;
+	padding: 3px 0;
+	border-width: 0;
+	overflow: visible;
+	font: 13px Helvetica, Arial, sans-serif;
+	text-decoration: none;
+	color: #000;
+}
+* html button.btn {
+	padding-bottom: 1px;
+}
+/*  Immediately below is a temporary hack to serve the 
+	following margin values only to Gecko browsers
+	Gecko browsers add an extra 3px of left/right 
+	padding to button elements which can't be overriden.
+	Thus, we use -3px of left/right margin to overcome this.
+*/
+html:not([lang*=""]) button.btn {
+	margin:0 -3px;
+}
+.btn span {
+	background: #ddd url('bg-button.gif') repeat-x 0 0;
+	margin:0;
+	padding:3px 0;
+	border-left:1px solid #bbb;
+	border-right:1px solid #aaa;
+}
+* html .btn span {
+	padding-top: 0;
+}
+.btn span span {
+	position:relative;
+	padding:3px .4em;
+	border-width:0;
+	border-top:1px solid #bbb;
+	border-bottom:1px solid #aaa;
+}

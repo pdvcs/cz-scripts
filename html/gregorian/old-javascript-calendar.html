@@ -1,0 +1,362 @@
+<HTML><HEAD><TITLE>JavaScript Gregorian Calendar</TITLE>
+<STYLE type=text/css>
+<!--
+H3 {
+    color: black;
+    font-size: 12pt;
+    line-height: 12pt;
+    font-family: Helvetica, Arial, sans-serif;
+}
+.formTD {
+    font-size: 10pt;
+    font-family: Verdana, Helvetica, Arial, sans-serif;
+}
+-->
+</STYLE>
+
+<SCRIPT language=JavaScript>
+<!--
+
+/*
+ * JavaScript to generate calendars
+ * by Prasenjeet Dutta (prasenjeetd@hotmail.com)
+ * See terms of use at http://creativecommons.org/licenses/by/2.0/uk/
+ */
+
+var isIE4 = ((navigator.appName == "Microsoft Internet Explorer") && (parseInt(navigator.appVersion) >= 4 ))
+var isIE3 = (navigator.appName == "") // kind of dumb, but it works
+var docOut = self  // output on same document (for IE4 and IE3)
+
+function CMonth(sName, iMaxDays) {
+        this.sName=sName
+        this.iMaxDays=iMaxDays
+}
+
+/////////////////////////////////////////////
+
+tblCMonth=new Array(12)
+tblCMonth[0]=new CMonth("January", 31)
+tblCMonth[1]=new CMonth("February", 28)
+tblCMonth[2]=new CMonth("March", 31)
+tblCMonth[3]=new CMonth("April", 30)
+tblCMonth[4]=new CMonth("May", 31)
+tblCMonth[5]=new CMonth("June", 30)
+tblCMonth[6]=new CMonth("July", 31)
+tblCMonth[7]=new CMonth("August", 31)
+tblCMonth[8]=new CMonth("September", 30)
+tblCMonth[9]=new CMonth("October", 31)
+tblCMonth[10]=new CMonth("November", 30)
+tblCMonth[11]=new CMonth("December", 31)
+
+/////////////////////////////////////////////
+
+// Netscape 3.x, 4.x workaround
+function OpenWindow()   {
+     NewWindow=window.open("","",'width=800,height=600,resizable=1,scrollbars=1')
+     return NewWindow
+}
+
+/////////////////////////////////////////////
+
+function isLeap(year) {
+        if ((year % 100 != 0) && (year % 4 == 0) || (year % 400 == 0)) {
+                return true
+        } 
+        return false
+}
+
+/////////////////////////////////////////////
+
+function julianDay(iDay, iMonth, iYear) {
+
+        var j = iDay
+
+        for(var i = 1; i < iMonth; i++) {
+                j += tblCMonth[i-1].iMaxDays
+        }
+        return j
+}
+
+/////////////////////////////////////////////
+
+// return the day of week: 1=Sun, 2=Mon, ..., 7=Sat
+function dow(year, julian) {
+
+        // note this grotesque hack of ... - (-julian) + ....!
+        // apparently, JS thinks 2+3 = 23 (concatenation instead of addition)
+        // Please email me if you know a better method
+
+        var code = (year - (-julian) + Math.floor( (year-1)/4 ) 
+                  - Math.floor( (year-1)/100 ) + Math.floor( (year-1)/400 )) % 7
+        if (code == 0) {
+                return 7
+        }
+        return code
+}
+
+/////////////////////////////////////////////
+
+function generateCalendar() {
+        
+        if (isIE4 == false && isIE3 == false) {
+                docOut = OpenWindow() // open a new window for Netscape users
+        }
+        var iYear = document.forms[0].txYear.value
+        var iMonth=(document.forms[0].selectMonth.selectedIndex) + 1
+        var iShowWholeYear = (document.forms[0].bWholeYear.checked == true ? 1 : 0)
+
+        if (iShowWholeYear == 0) {
+                showCalendar(iYear, iMonth, true)
+        } else {
+                showYearCal(iYear)
+        }
+        
+}
+
+/////////////////////////////////////////////
+
+// show calendar for entire year
+function showYearCal(iYear) {
+        
+        var sCellPadding = "10"
+        var sNumCols = "2"
+        var iBreakRowAt = 2
+
+        if (document.forms[0].bShow3by4.checked == true) {
+                sCellPadding = "5"
+                sNumCols = "3"
+                iBreakRowAt = 3
+        }
+        if (!(iYear > 1582 && iYear <= 25000)) {
+                docOut.document.writeln("Cannot display a calendar for the year \""+iYear+"\".\n\n"+
+                "Please enter a year between 1583 AD and 25000 AD.")
+                if (isIE4==true || isIE3==true) {
+                        docOut.document.writeln("<P>Click <INPUT TYPE=\"button\" VALUE=\"Back\" onClick=\"history.go(-1)\">")
+                        docOut.document.writeln(" to go back to the Calendar generator.")
+                }
+                return
+        }
+
+
+        // start dynamic HTML generation
+        docOut.document.writeln("<!JavaScript Generated HTML; Prasenjeet Dutta MCMXCVIII>")
+        docOut.document.writeln("<HTML><HEAD><TITLE>JavaScript Generated Calendar</TITLE>")
+        docOut.document.writeln("</HEAD>")
+        docOut.document.writeln("<BODY BGCOLOR=white>")
+        if (isIE4==false && isIE3==false) {
+                docOut.document.writeln("<SMALL>Maximize this window to see the full calendar.</SMALL><P>&nbsp;<P>")
+        }
+        if (isIE4==true) {
+                docOut.document.writeln("<SMALL><DIV onClick=\"history.go(-1)\"><U>Click here to go back to the Calendar Generator</U></DIV></SMALL><P>")
+        }
+        docOut.document.writeln("<DIV ALIGN=CENTER><H1>Calendar for: "+ iYear +"</H1>")
+
+        // table params for whole-year view
+        docOut.document.writeln("<TABLE COLS="+sNumCols+" VALIGN=MIDDLE ALIGN=CENTER CELLPADDING="+sCellPadding+" BGCOLOR=white BORDER=1><TR>")
+        
+        for (var i = 1; i <= 12; i++) {
+                
+                if (i % iBreakRowAt == 1) {
+                        docOut.document.writeln("</TR><TR>")
+                }
+                docOut.document.writeln("<TD VALIGN=TOP>")
+                showCalendar(iYear, i, false)
+                docOut.document.writeln("</TD>")
+        }
+        docOut.document.writeln("</TABLE>")
+
+        if (isIE4==true || isIE3==true) {
+                docOut.document.writeln("<P>Click <INPUT TYPE=\"button\" VALUE=\"Back\" onClick=\"history.go(-1)\">")
+                docOut.document.writeln(" or press the <EM>Back Button</EM> on your browser to go back to ")
+                docOut.document.writeln("the Gregorian Calendar Generator.<P></DIV>")
+        }
+        docOut.document.writeln("<HR><SMALL>Copyright &copy; Prasenjeet Dutta 1998-2000; <A HREF=\"http://www.angelfire.com/in/pdutta/calenJS.html\">http://www.angelfire.com/in/pdutta/calenJS.html</A></SMALL>")
+        docOut.document.writeln("</DIV></BODY></HTML>")
+        docOut.document.close()
+}
+
+
+/////////////////////////////////////////////
+
+// show calendar for a particular year and month
+function showCalendar(iYear, iMonth, bOnlyMonth) {
+        
+        var sResult = ""
+        var chSpace = "&nbsp;"
+        var bSunTrFlag = 0
+        var savYear = iYear
+
+        if (iYear > 1582 && iYear <= 25000) {
+                
+                // adjust for February
+                if (isLeap(iYear) == true) {
+                        tblCMonth[1].iMaxDays=29
+                } else {
+                        tblCMonth[1].iMaxDays=28
+                }
+                
+                if (bOnlyMonth == true) {
+
+                        // begin Dynamic HTML Generation
+                        docOut.document.writeln("<!JavaScript Generated HTML; Prasenjeet Dutta MCMXCVIII>")
+                        docOut.document.writeln("<HTML><HEAD><TITLE>JavaScript Generated Calendar</TITLE></HEAD><BODY BGCOLOR=white>")
+                        docOut.document.writeln("<DIV ALIGN=CENTER><H1>Calendar for: "+tblCMonth[iMonth-1].sName+" "+ savYear +"</H1><HR>")
+                } else {
+                        docOut.document.writeln("<DIV ALIGN=CENTER><BIG>"+tblCMonth[iMonth-1].sName+"</BIG><BR>")
+                }
+
+                docOut.document.writeln("<FONT FACE=courier>")
+    
+                // calendar is output as a table - these are the table params
+                docOut.document.writeln("<TABLE COLS=7 BGCOLOR=white BORDER=0>")
+                
+                // this is the header dislay of days of week            
+                docOut.document.writeln("<THEAD><TR><TH ALIGN=right><FONT FACE=courier COLOR=red>Sun</FONT></TH>")
+                docOut.document.writeln("<TH ALIGN=right><FONT FACE=courier>Mon</FONT></TH><TH ALIGN=right><FONT FACE=courier>Tue</FONT></TH>")
+                docOut.document.writeln("<TH ALIGN=right><FONT FACE=courier>Wed</FONT></TH><TH ALIGN=right><FONT FACE=courier>Thu</FONT></TH>")
+                docOut.document.writeln("<TH ALIGN=right><FONT FACE=courier>Fri</FONT></TH><TH ALIGN=right><FONT FACE=courier>Sat</FONT></TH></TR>")
+                docOut.document.writeln("<TBODY><TR>")
+                
+                var jday = julianDay(1, iMonth, iYear)
+                var fday = dow(iYear, jday)
+                
+                // write the 1st of the month
+                for (var idx = 1; idx < fday; idx++) {
+                        docOut.document.writeln("<TD>&nbsp;&nbsp;</TD>")
+                }
+                if (fday > 1)
+                        docOut.document.writeln("<TD ALIGN=right><FONT FACE=courier>&nbsp;1</FONT></TD>")
+                else
+                        docOut.document.writeln("<TD ALIGN=right><FONT FACE=courier COLOR=red>&nbsp;1</FONT></TD>")
+
+
+                for (var j = 2; j <= tblCMonth[iMonth-1].iMaxDays; j++)   {
+
+                        if (dow(iYear, julianDay(j-1, iMonth, iYear)) == 7) {
+                                docOut.document.writeln("</TR><TR>")
+                                bSunTrFlag=1
+                        }
+                        if (j < 10)
+                                chSpace = "&nbsp;"
+                        else
+                                chSpace = ""
+
+                        if (bSunTrFlag == 1) {
+                                docOut.document.writeln("<TD ALIGN=right><FONT FACE=courier COLOR=red>"+ chSpace + j + "</FONT></TD>")
+                                bSunTrFlag = 0
+                        } else {
+                                docOut.document.writeln("<TD ALIGN=right><FONT FACE=courier>"+ chSpace + j + "</FONT></TD>")
+                        
+                        }
+
+                        
+                }
+                
+                if (bOnlyMonth == true) {
+                
+                        docOut.document.writeln("</TR></TABLE></FONT>")
+                        if (isIE4==true || isIE3==true) {
+                                docOut.document.writeln("<P>Click <INPUT TYPE=\"button\" VALUE=\"Back\" onClick=\"history.go(-1)\">")
+                                docOut.document.writeln(" or press the <EM>Back Button</EM> on your browser to go back to ")
+                                docOut.document.writeln("the Gregorian Calendar Generator.<P></DIV>")
+                        }
+                        docOut.document.writeln("<HR><SMALL>Copyright &copy; Prasenjeet Dutta 1998-2000; <A HREF=\"http://www.angelfire.com/in/pdutta/calenJS.html\">http://www.angelfire.com/in/pdutta/calenJS.html</A></SMALL>")
+                        docOut.document.writeln("</BODY></HTML>")
+                        docOut.document.close()
+                } else {
+                        docOut.document.writeln("</TR></TABLE></FONT>")
+                }
+                
+        } else { // year out of range 1583..25000
+                docOut.document.writeln("Cannot display a calendar for the year \""+iYear+"\".\n\n")
+                docOut.document.writeln("Please enter a year between 1583 AD and 25000 AD.")
+                if (isIE4==true || isIE3==true) {
+                        docOut.document.writeln("<P>Click <INPUT TYPE=\"button\" VALUE=\"Back\" onClick=\"history.go(-1)\">")
+                        docOut.document.writeln(" to go back to the Calendar generator.")
+                }
+                docOut.document.close()
+        }
+}
+
+function populateForm() {
+	document.forms[0].txYear.value = (new Date()).getFullYear();
+}
+
+//-->
+</SCRIPT>
+</HEAD>
+<BODY onLoad="populateForm()">
+<SCRIPT language=JavaScript>
+<!--
+// Warn JavaScript-challeged browsers
+//-->
+</SCRIPT>
+<NOSCRIPT>
+<H2>Warning!</H2>
+This page uses JavaScript scripting to print calendars for any month in the years 1583
+to 25000. However, to use this page, you browser must support JavaScript. Two browsers
+which do so are <A HREF="http://www.netscape.com/">Netscape Communicator</A> and <NOBR>
+<A HREF="http://www.microsoft.com/ie/">Microsoft Internet Explorer</A> </NOBR>. 
+If you are using any of these browsers, you may need to enable script execution
+(see your Options menu or equivalent). <P><B>Currently, this page will 
+<STRONG>not</STRONG> work as designed.</B><P>
+</NOSCRIPT><!-- START_NEW_PAGE_HEADER -->
+<TABLE id=table1 style="BORDER-TOP: black 4px solid; BORDER-LEFT-WIDTH: 0px; BORDER-LEFT-COLOR: black; BORDER-BOTTOM-WIDTH: 0px; BORDER-BOTTOM-COLOR: black; PADDING-TOP: 5px; BORDER-RIGHT-WIDTH: 0px; BORDER-RIGHT-COLOR: black" cellPadding=0 width="100%" border=0>
+<TBODY>
+<TR>
+<TD vAlign=top>
+<H2><FONT face=Arial>Gregorian Calendar in Javascript</FONT></H2></TD>
+<TD width=51><A href="http://www.chaoszone.org/"><IMG height=51 src="http://www.chaoszone.org/images/czsqsmall.png" width=51 border=0></A></TD></TR></TBODY></TABLE>
+<!-- START_PAGE -->
+<P ALIGN=CENTER><BIG><B><SPAN STYLE="COLOR: red;">This is an old version of the calendar script, written in 1998.</SPAN> <A HREF="http://www.chaoszone.org/misc/gregorian/calendar.html">You should use the latest version.</A></B></BIG></P>
+<!-- <DIV STYLE="background: #c0c0c0">&nbsp;<P> -->
+<TABLE cols=1 width="95%" align=center bgColor=#d2d0c8 border=1>
+<TBODY>
+<TR>
+<TD class=formTD>
+<FORM>
+<BR>&nbsp;&nbsp;&nbsp;
+<STRONG>Calendar for</STRONG>&nbsp;&nbsp;<STRONG><EM>Month:</EM></STRONG>
+<SELECT size=1 name=selectMonth> <OPTION value=January selected>January<OPTION value=February>February<OPTION value=March>March<OPTION value=April>April<OPTION value=May>May<OPTION value=June>June<OPTION value=July>July<OPTION value=August>August<OPTION value=September>September<OPTION value=October>October<OPTION value=November>November<OPTION value=December>December</OPTION></SELECT>
+&nbsp;&nbsp;&nbsp;
+<STRONG><EM>Year:</EM></STRONG>
+<INPUT size=5 value="" name=txYear> (Enter a year between 1583 and 25000.)<BR>
+&nbsp;&nbsp;&nbsp;
+<INPUT type=checkbox name=bWholeYear checked=true> Show Calendar for Entire Year <EM>(may take a bit of time to appear!)</EM>
+<BR>&nbsp;&nbsp;&nbsp;
+<INPUT type=checkbox name=bShow3by4 checked=true> Display full calendar in 3x4 format
+<BR><BR>&nbsp;&nbsp;&nbsp;
+<INPUT onclick=generateCalendar() type=button value="Show Calendar" name=show>
+<BR></FORM></TD></TR></TBODY></TABLE>
+<P>This script supports Netscape 3.x and 4.x, as well as Internet Explorer 3.x and 4.x. However, there are <EM>still</EM> a couple of quirks under Netscape 4.x, mainly relating to window resizing. You can try the simpler <A href="http://www.angelfire.com/in/pdutta/calenjava.html">Java version</A> here if you aren't happy with the output.
+<P>To print the generated calendar, use your browser's Print command. For printing, you may like to check the "Display full calendar in 3x4 format" option -- it will save you some paper. Or, to paste it into any HTML-aware application (most word-processors and email clients these days), highlight the calendar, then choose your clipboard Copy command.
+<P>
+<HR>
+
+<H2>About this script</H2><A name=backgroundAnchor></A>
+<P><A name=issues></A>
+<H3>Known Issues</H3>In Netscape 3.x/4.x, a new window is opened to show the generated calendar. In some cases (especially in Netscape 4.x), you may not be able to resize the window. <I>Workaround for Netscape 3:</I> Simply maximize the new window. Also, in Netscape 4.x, the month-only calendar appears distended. The Copy/Save&nbsp;As commands work.
+<P>The 25000 year limit is there for a reason -- many 16-bit machines overflow for larger years. The Gregorian calendar itself requires corrections after 33000CE or so, so you aren't missing much.
+<P>
+<H3>History</H3>This is the Javascript version of an <A href="http://www.angelfire.com/in/pdutta/calenjava.html">applet</A> I originally wrote in Java.
+<P>
+<HR>
+<SPAN class=finePrint>&copy; 1998 Prasenjeet Dutta. <a rel="license" href="http://creativecommons.org/licenses/by/2.0/uk/">Terms of Use</a>. Created Dec 12 1998 1354 IST.</SPAN>
+<P>&nbsp;</P>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#000000 border=0>
+<TBODY>
+<TR>
+<TD align=right>
+<!--WEBBOT bot="HTMLMarkup" startspan ALT="Site Meter" -->
+
+<!-- Site Meter -->
+<script type="text/javascript" src="http://s12.sitemeter.com/js/counter.js?site=s12chaoszone">
+</script>
+<noscript>
+<a href="http://s12.sitemeter.com/stats.asp?site=s12chaoszone" target="_top">
+<img src="http://s12.sitemeter.com/meter.asp?site=s12chaoszone" alt="Site Meter" border="0"/></a>
+</noscript>
+<!-- Copyright (c)2009 Site Meter -->
+
+
+<!--WEBBOT bot="HTMLMarkup" endspan --></TD></TR></TBODY></TABLE></BODY></HTML>
