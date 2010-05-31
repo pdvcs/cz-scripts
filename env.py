@@ -1,17 +1,22 @@
 #!/usr/bin/python
 
-# See LICENSE.txt in this source repository for terms of use.
-# Displays HTTP header information sent by the browser.
-
 import os
 import random
 
 print "Content-Type: text/html"
 print "Expires: now\n"
 
-print "<HTML><HEAD><TITLE>Request Headers</TITLE></HEAD><BODY>\n";
-print "<TABLE BORDER=1>\n";
-
+print """<html>
+<head>
+<title>Request Headers</title>
+<style type="text/css">
+  body, td { font-family: Calibri, Geneva, Verdana, sans-serif; }
+  table, td { border-collapse: collapse; border: 1px solid black; padding: 5px;}
+</style>
+</head>
+<body>
+<table>
+"""
 v = ('REMOTE_ADDR',
     'HTTP_ACCEPT',
     'HTTP_USER_AGENT',
@@ -26,10 +31,10 @@ for i in v:
         s = os.environ[i]
     except KeyError:
         if i == 'HTTP_REFERER':
-            s = '--No Referer Information Present.--'
+            s = '(No Referer)'
         else:
             s = '&nbsp;'
-    print '<TR><TD BGCOLOR=#CCCCCC>', i, '</TD><TD>', s, '</TD></TR>'
+    print '<tr><td bgcolor="#dddddd"><b>', i, '</b></td><td>', s, '</td></tr>'
 
-print '\n</TABLE><P><A HREF="http://www.chaoszone.org/dyn/env.py?cb=%d">Reload this page &raquo;</A></P>' % (random.randrange(101, 9999))
-print '</BODY></HTML>\n'
+print '\n</table><p><a href="http://www.chaoszone.org/dyn/env.py?cb=%d">Reload this page &raquo;</a></p>' % (random.randrange(101, 9999))
+print '</body></html>\n'
