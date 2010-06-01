@@ -13,7 +13,7 @@
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
         <script type="text/javascript">
         <!--
-            
+           
             function button_enable (btnid) {
                 $(btnid).removeAttr("disabled");
                 $(btnid).css("color", "#000");
@@ -24,13 +24,13 @@
             }
 
             $(document).ready(function () {
-                
+               
                 initButtons();
-                
+               
                 var inputbox = $("#yearsel");
                 inputbox.val(new Date().getFullYear());
                 inputbox.focus();
-                
+               
                 inputbox.keyup(function (e) {
                     if (!yearpattern.test(inputbox.val())
                         || parseInt(inputbox.val()) < 1583
@@ -46,7 +46,7 @@
                     }
                 });
             });
-            
+           
             function initButtons () {
                 button_disable("#print");
                 $("#show").click(function (evt) {
@@ -72,7 +72,7 @@
                     }
                 });
             }
-            
+           
             var timeDiff = {
                 setStartTime : function () {
                     d = new Date();
@@ -84,15 +84,16 @@
                     return (d.getTime()-time);
                 }
             }
-            
+           
+            var daynames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
             var mtbl  = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
             var mnames = new Array("January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December");
-            
+           
             // End-of-month Julian Day lookup tables for normal and leap years
             var jdtbln = new Array(0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
             var jdtbll = new Array(0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335);
-            
+           
             var leap = false;
             var jdtbl = jdtbln;
             var yearpattern = /^\d{4,5}$/;
@@ -118,7 +119,8 @@
 
             function renderMonth (parent, month, year) {
                 var dateCells = $(parent + " td.dt");
-                var cellid = dayOfWeek(1, month, year) - 1;
+                var cellid = dayOfWeek(1, month, year) - 2;
+                if (cellid < 0) cellid = 6;
                 var max = mtbl[month-1];
                 if (max == 28 && leap) max = 29;
 
@@ -128,11 +130,11 @@
                 }
                 $(parent + " td.mo").html(mnames[month-1]);
             }
-            
+           
             function getMonthSequence (mainMonth) {
                 var tmp = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
                 if (mainMonth == 0) return tmp;
-                
+               
                 var monthseq = new Array();
                 monthseq.push(mainMonth);
                 if (mainMonth == 11) {
@@ -169,9 +171,14 @@
                     $("#mtoprow2").hide();
                 }
             }
-            
+           
             function renderCalendar (startMonth, stopMonth, year) {
                 timeDiff.setStartTime();
+                daynames.push(daynames.shift());
+                $(".day").each(
+                    function (ix) { $(this).text(daynames[ix]); }
+                );
+
                 displayStyle = $("#dispstyle").val();
                 var d = new Date();
                 var seqargs = 0;
@@ -195,7 +202,7 @@
                 var elapsed = timeDiff.getDiff();
                 $("#bm").text(" | Page rendered in " + elapsed + " ms.").show();
             }
-        
+       
         // -->
         </script>
     </head>
@@ -205,6 +212,7 @@
             <p class="jswarn">This page makes printable calendars for any year between 1583 and 25000.
             You need to enable Javascript for it to work.</p>
         </noscript>
+
         <p class="inputform">
             Enter a year between 1583 and 25000:
             <input type="text" id="yearsel" name="yearsel" value="" maxlength="5" />
@@ -213,6 +221,7 @@
             &nbsp;&nbsp;
             Display style: <select id="dispstyle" name="dispstyle">
                 <option value="std" selected="selected">Standard</option>
+
                 <!-- <option value="alt1">Alternate</option> -->
             </select>
             &nbsp;&nbsp;
@@ -221,6 +230,7 @@
         <div id="cal" style="display: none;">
         <div id="caltitle"></div>
         <table cols="2" id="mtoprow2" style="display: none;">
+
             <tr>
                 <td id="monthmain" valign="top"><span id="p2-0"></span></td>
                 <td id="monthssec" valign="top">
@@ -230,6 +240,7 @@
             </tr>
         </table>
         <table cols="3" id="months">
+
             <tr id="mtoprow" style="display: none;">
                 <td class="mc" valign="top"><span id="p0"></span></td>
                 <td class="mc" valign="top"><span id="p1"></span></td>
@@ -239,6 +250,7 @@
                 <td class="mc" valign="top"><span id="p3"></span></td>
                 <td class="mc" valign="top"><span id="p4"></span></td>
                 <td class="mc" valign="top"><span id="p5"></span></td>
+
             </tr>
             <tr>
                 <td class="mc" valign="top"><span id="p6"></span></td>
@@ -248,6 +260,7 @@
             <tr>
                 <td class="mc" valign="top"><span id="p9"></span></td>
                 <td class="mc" valign="top"><span id="p10"></span></td>
+
                 <td class="mc" valign="top"><span id="p11"></span></td>
             </tr>
         </table>
